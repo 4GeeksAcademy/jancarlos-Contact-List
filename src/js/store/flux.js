@@ -12,9 +12,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			],
+			contact: []
 		},
 		actions: {
+
+			GetContact: () => {
+				fetch(`https://playground.4geeks.com/apis/fake/contact/agenda/Jancarlos`)
+					.then((result) => result.json())
+					.then((data) => {
+						let store = getStore()
+						setStore({ ...store, contact: data });
+						console.log("Contacts obtained successfully: ", data);
+					})
+					.catch((error) => {
+						console.log("Error getting contacts: ", error);
+					});
+
+			},
+
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
