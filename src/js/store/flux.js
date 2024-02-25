@@ -1,60 +1,101 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			],
+			contacts: [],
+			formData: {},
+			currentEdit: {},
 			contact: []
 		},
 		actions: {
+			getContacts: async () => {
+				try {
+					const response = await fetch("https://playground.4geeks.com/apis/fake/contact/agenda/Jancarlos")
+					if (response.ok) {
+						const data = await response.json();
+						let store = getStore();
+						setStore({ ...store, contacts: data });
+						console.log(data)
+					}
+				}
 
-			GetContact: () => {
-				fetch(`https://playground.4geeks.com/apis/fake/contact/agenda/Jancarlos`)
-					.then((result) => result.json())
-					.then((data) => {
-						let store = getStore()
-						setStore({ ...store, contact: data });
-						console.log("Contacts obtained successfully: ", data);
+				catch (error) {
+					console.log("Algo salio mal", (error));
+				}
+			},
+			addContact: async (data) => {
+				const actions = getActions();
+				try {
+
+					const response = await fetch("https://playground.4geeks.com/apis/fake/contact", {
+						method: "POST",
+						body: JSON.stringify(data),
+						headers: {
+							"Content-Type": "application/json"
+						}
 					})
-					.catch((error) => {
-						console.log("Error getting contacts: ", error);
-					});
+					console.log("respueta", response)
+					if (response.ok) {
+						actions.getContacts();
+					}
+				}
+				catch (error) {
 
+					console.log("aca esta el error", error)
+				}
 			},
 
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-			loadSomeData: () => {
-				/**
-					fetch().then().then(data => setStore({ "foo": data.bar }))
-				*/
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
+			editContact: async (body, id) => {
+				try {
 
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
+					const response = await fetch(`https://playground.4geeks.com/apis/fake/contact/${id}`, {
+						method: "PUT",
+						body: JSON.stringify(body),
+						headers: {
+							"Content-Type": "application/json"
+						}
+					})
+					if (!response.ok) {
+						throw new Error("no se pudo actualizar")
+					}
 
-				//reset the global store
-				setStore({ demo: demo });
+					const data = await response.json()
+					console.log(data);
+					const actions = getActions()
+					await actions.getContacts()
+
+				}
+				catch (error) {
+					console.error(error)
+				}
+			},
+
+			setCurrentEdit: (obj) => {
+				let store = getStore();
+				setStore({ ...store, currentEdit: obj });
+			},
+
+			deleteContact: async (idContact) => {
+				try {
+
+					const response = await fetch(`https://playground.4geeks.com/apis/fake/contact/${idContact}`, {
+						method: "DELETE"
+					})
+					if (!response.ok) {
+						throw new Error("no se pudo eliminar")
+					}
+
+					const data = await response.json()
+					console.log("el contacto se elimino correctamente", data)
+					const actions = getActions()
+					await actions.getContacts()
+
+				}
+				catch (error) {
+					console.log(error)
+				}
 			}
 		}
+
 	};
 };
 
